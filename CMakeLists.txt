@@ -56,13 +56,15 @@ IF(MSVC)
 	# are linking statically
 	OPTION( STATIC_CRT		"Link the static CRT libraries"	ON  )
 
-	# By default, libgit2 is built with WinHTTP.  To use the built-in
-	# HTTP transport, invoke CMake with the "-DWINHTTP=OFF" argument.
-	OPTION( WINHTTP			"Use Win32 WinHTTP routines"	ON  )
-
 	ADD_DEFINITIONS(-D_SCL_SECURE_NO_WARNINGS)
 	ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
 	ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_DEPRECATE)
+ENDIF()
+
+if (WIN32)
+	# By default, libgit2 is built with WinHTTP.  To use the built-in
+	# HTTP transport, invoke CMake with the "-DWINHTTP=OFF" argument.
+	OPTION( WINHTTP			"Use Win32 WinHTTP routines"	ON  )
 ENDIF()
 
 # This variable will contain the libraries we need to put into
@@ -134,8 +136,9 @@ STRING(REGEX REPLACE "^.*LIBGIT2_SOVERSION ([0-9]+)$" "\\1" LIBGIT2_SOVERSION "$
 # Find required dependencies
 INCLUDE_DIRECTORIES(src include)
 
-IF (WIN32 AND WINHTTP AND NOT MINGW)
+IF (WIN32 AND WINHTTP)
 	ADD_DEFINITIONS(-DGIT_WINHTTP)
+	TARGET_LINK_LIBRARIES(${target}  winhttp)
 	INCLUDE_DIRECTORIES(deps/http-parser)
 	FILE(GLOB SRC_HTTP deps/http-parser/*.c deps/http-parser/*.h)
 ELSE ()
